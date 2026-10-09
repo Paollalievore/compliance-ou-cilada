@@ -2,7 +2,7 @@
 """
 =============================================================
   COMPLIANCE OU CILADA — Versão Final
-  Identidade Visual Camil + Respostas Anônimas + Render
+  Logos reais + Identidade Visual PPT + Render
 =============================================================
 """
 
@@ -16,14 +16,9 @@ app = Flask(__name__)
 DB_PATH = os.environ.get("DB_PATH", "compliance_ou_cilada.db")
 SENSOR_ID = "COMPLIANCE_OU_CILADA"
 
-# ═══════════════════════════════════════════════
-#  CORES DA IDENTIDADE VISUAL CAMIL
-# ═══════════════════════════════════════════════
-# Verde Compliance:  #8DC63F
-# Laranja Cilada:    #F7941D
-# Azul Camil escuro: #003087
-# Azul Camil médio:  #0072CE
-# Fundo:             #FFFFFF
+# URLs das imagens no GitHub
+LOGO_INTEGRIDADE = "https://raw.githubusercontent.com/Paollalievore/compliance-ou-cilada/main/CAMIL%20-%20SELO%20transparente.png"
+LOGO_CAMPANHA = "https://raw.githubusercontent.com/Paollalievore/compliance-ou-cilada/main/Compliance%20ou%20Cilada%20.png"
 
 
 # ═══════════════════════════════════════════════
@@ -189,7 +184,6 @@ def seed_dados():
         "Engajar colaboradores em temas de integridade e medir nível de conhecimento"
     ))
 
-    # PERGUNTA 1 — Brinde do fornecedor (Compliance)
     c.execute("""
         INSERT INTO perguntas (id_pergunta, id_campanha, cd_tema, cd_subtema,
                                ds_cenario, ds_resposta_correta,
@@ -224,7 +218,7 @@ def seed_dados():
 
 
 # ═══════════════════════════════════════════════
-#  ROTA PRINCIPAL — Registro + Feedback (anônimo)
+#  ROTA PRINCIPAL — Registro + Feedback
 # ═══════════════════════════════════════════════
 
 @app.route("/compliance-ou-cilada")
@@ -296,7 +290,6 @@ def responder():
 def indicadores_geral():
     conn = get_db()
     c = conn.cursor()
-
     c.execute("""
         SELECT
             COUNT(*)                                                AS total_respostas,
@@ -306,13 +299,9 @@ def indicadores_geral():
         FROM respostas
     """)
     geral = dict(c.fetchone())
-
     c.execute("""
         SELECT
-            r.id_pergunta,
-            r.id_campanha,
-            r.cd_tema,
-            t.ds_tema,
+            r.id_pergunta, r.id_campanha, r.cd_tema, t.ds_tema,
             p.ds_nivel_dificuldade,
             COUNT(*)                                                                      AS total_respostas,
             SUM(CASE WHEN r.ds_resposta_escolhida = 'compliance' THEN 1 ELSE 0 END)      AS cliques_compliance,
@@ -327,7 +316,6 @@ def indicadores_geral():
         ORDER BY r.id_pergunta
     """)
     por_pergunta = [dict(row) for row in c.fetchall()]
-
     conn.close()
     return jsonify({
         "sensor_id": SENSOR_ID,
@@ -401,12 +389,10 @@ def exportar_csv():
     rows = c.fetchall()
     headers = [desc[0] for desc in c.description]
     conn.close()
-
     output = io.StringIO()
     output.write(";".join(headers) + "\n")
     for row in rows:
         output.write(";".join(str(v) if v is not None else "" for v in row) + "\n")
-
     return Response(
         output.getvalue(),
         mimetype="text/csv; charset=utf-8",
@@ -426,10 +412,8 @@ def cadastrar_pergunta():
     for campo in obrigatorios:
         if campo not in data or not data[campo]:
             return jsonify({"erro": f"Campo obrigatório ausente: {campo}"}), 400
-
     if data["ds_resposta_correta"] not in ("compliance", "cilada"):
         return jsonify({"erro": "ds_resposta_correta deve ser 'compliance' ou 'cilada'"}), 400
-
     conn = get_db()
     c = conn.cursor()
     try:
@@ -509,8 +493,7 @@ def listar_temas():
 
 
 # ═══════════════════════════════════════════════
-#  TEMPLATE HTML — Identidade Visual Camil
-#  Baseado no PPT "Compliance ou Cilada"
+#  TEMPLATE HTML — Fiel ao PPT com logos reais
 # ═══════════════════════════════════════════════
 
 def render_feedback(erro_sistema=False, mensagem="", acertou=None,
@@ -525,7 +508,7 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Compliance ou Cilada — Integridade Camil</title>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
             * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -536,109 +519,69 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
                 align-items: center;
                 justify-content: center;
                 padding: 20px;
-                background-color: #f0f4f8;
+                background-color: #f5f5f5;
             }
 
             .card {
                 background: #ffffff;
-                border-radius: 24px;
-                padding: 0;
-                max-width: 640px;
+                border-radius: 20px;
+                max-width: 600px;
                 width: 100%;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+                box-shadow: 0 8px 40px rgba(0,0,0,0.10);
                 overflow: hidden;
-                animation: slideUp 0.6s ease-out;
+                animation: slideUp 0.5s ease-out;
             }
 
             @keyframes slideUp {
-                from { opacity: 0; transform: translateY(40px); }
+                from { opacity: 0; transform: translateY(30px); }
                 to   { opacity: 1; transform: translateY(0); }
             }
 
             /* ── HEADER ── */
             .header {
-                background: #003087;
-                padding: 28px 40px;
+                background: #ffffff;
+                padding: 32px 40px 20px;
                 text-align: center;
+                border-bottom: 1px solid #eee;
             }
 
-            .logo-integridade {
-                font-size: 11px;
-                font-weight: 700;
-                color: #93c5fd;
-                text-transform: uppercase;
-                letter-spacing: 2px;
+            .logo-integridade img {
+                height: 50px;
                 margin-bottom: 16px;
             }
 
-            .titulo-campanha {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                flex-wrap: wrap;
-            }
-
-            .tag-compliance {
-                background: #8DC63F;
-                color: #000000;
-                font-size: 22px;
-                font-weight: 900;
-                padding: 6px 18px;
-                border-radius: 6px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .tag-ou {
-                background: #003087;
-                border: 2px solid #93c5fd;
-                color: #ffffff;
-                font-size: 14px;
-                font-weight: 600;
-                padding: 4px 12px;
-                border-radius: 20px;
-            }
-
-            .tag-cilada {
-                background: #F7941D;
-                color: #000000;
-                font-size: 22px;
-                font-weight: 900;
-                padding: 6px 18px;
-                border-radius: 6px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
+            .logo-campanha img {
+                max-width: 340px;
+                width: 100%;
+                margin-bottom: 8px;
             }
 
             .tagline {
-                color: #bfdbfe;
-                font-size: 13px;
-                margin-top: 12px;
-                font-weight: 400;
+                font-size: 14px;
+                color: #003087;
+                font-weight: 500;
             }
             .tagline strong {
-                font-weight: 700;
-                color: #ffffff;
+                font-weight: 800;
             }
 
-            /* ── RESULTADO ── */
+            /* ── RESULTADO BANNER ── */
             .resultado-banner {
-                padding: 20px 40px;
+                padding: 18px 40px;
                 text-align: center;
-                font-size: 20px;
+                font-size: 22px;
                 font-weight: 800;
-                letter-spacing: 0.5px;
+                letter-spacing: 0.3px;
             }
 
             .resultado-acertou {
-                background: #d4edda;
-                color: #155724;
+                background: #8DC63F;
+                color: #ffffff;
             }
 
             .resultado-errou {
-                background: #f8d7da;
-                color: #721c24;
+                background: #F7941D;
+                color: #ffffff;
             }
 
             .resultado-erro-sistema {
@@ -651,13 +594,14 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
                 padding: 28px 40px 32px;
             }
 
+            /* Sua resposta / Correta */
             .resposta-info {
                 display: flex;
                 justify-content: center;
-                gap: 24px;
+                gap: 28px;
                 margin-bottom: 20px;
                 font-size: 13px;
-                color: #6b7280;
+                color: #555;
             }
             .resposta-info span {
                 display: flex;
@@ -665,38 +609,42 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
                 gap: 6px;
             }
             .dot {
-                width: 10px;
-                height: 10px;
+                width: 10px; height: 10px;
                 border-radius: 50%;
                 display: inline-block;
             }
-            .dot-sua     { background: #0072CE; }
+            .dot-sua     { background: #003087; }
             .dot-correta { background: #8DC63F; }
 
+            /* Badge resposta */
+            .badge-wrapper {
+                text-align: center;
+                margin-bottom: 24px;
+            }
             .badge-resposta {
                 display: inline-block;
-                padding: 8px 24px;
-                border-radius: 6px;
-                font-size: 15px;
+                padding: 10px 28px;
+                border-radius: 8px;
+                font-size: 16px;
                 font-weight: 800;
                 text-transform: uppercase;
                 letter-spacing: 1px;
-                margin-bottom: 24px;
             }
             .badge-compliance {
                 background: #8DC63F;
-                color: #000000;
+                color: #ffffff;
             }
             .badge-cilada {
                 background: #F7941D;
-                color: #000000;
+                color: #ffffff;
             }
 
+            /* Cenário */
             .cenario-box {
                 background: #f8f9fa;
                 border-left: 4px solid #003087;
-                padding: 16px 20px;
-                border-radius: 0 8px 8px 0;
+                padding: 18px 22px;
+                border-radius: 0 10px 10px 0;
                 margin-bottom: 20px;
             }
             .cenario-label {
@@ -704,87 +652,91 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
                 font-weight: 700;
                 color: #003087;
                 text-transform: uppercase;
-                letter-spacing: 1px;
-                margin-bottom: 6px;
+                letter-spacing: 1.5px;
+                margin-bottom: 8px;
             }
             .cenario-texto {
                 font-size: 14px;
-                color: #374151;
+                color: #333;
                 line-height: 1.7;
             }
 
+            /* Explicação */
             .explicacao-box {
-                padding: 18px 20px;
+                padding: 18px 22px;
                 border-radius: 10px;
                 margin-bottom: 16px;
                 font-size: 14px;
-                color: #1f2937;
+                color: #333;
                 line-height: 1.7;
-            }
-            .explicacao-acertou {
-                background: #ecfdf5;
-                border: 1px solid #a7f3d0;
-            }
-            .explicacao-errou {
-                background: #fef2f2;
-                border: 1px solid #fecaca;
+                background: #f0f7e6;
+                border: 1px solid #c5e1a5;
             }
 
+            /* Boa prática */
             .boa-pratica-box {
-                background: #eff6ff;
-                border: 1px solid #bfdbfe;
+                background: #e8f0fe;
+                border: 1px solid #b3cde0;
                 border-radius: 10px;
-                padding: 18px 20px;
-                margin-bottom: 16px;
+                padding: 18px 22px;
+                margin-bottom: 8px;
             }
             .boa-pratica-label {
                 font-size: 11px;
                 font-weight: 700;
-                color: #0072CE;
+                color: #003087;
                 text-transform: uppercase;
-                letter-spacing: 1px;
-                margin-bottom: 6px;
+                letter-spacing: 1.5px;
+                margin-bottom: 8px;
             }
             .boa-pratica-texto {
                 font-size: 14px;
-                color: #1e40af;
+                color: #1a3a6b;
                 line-height: 1.7;
             }
 
             /* ── FOOTER ── */
             .footer {
-                background: #f9fafb;
+                background: #003087;
                 padding: 16px 40px;
                 text-align: center;
-                border-top: 1px solid #e5e7eb;
             }
             .footer p {
                 font-size: 11px;
-                color: #9ca3af;
+                color: #bfdbfe;
             }
             .footer .programa {
                 font-weight: 700;
-                color: #003087;
+                color: #ffffff;
                 font-size: 12px;
+                margin-bottom: 2px;
+            }
+
+            /* Responsivo */
+            @media (max-width: 480px) {
+                .header { padding: 24px 20px 16px; }
+                .conteudo { padding: 20px 20px 24px; }
+                .resultado-banner { padding: 14px 20px; font-size: 18px; }
+                .logo-campanha img { max-width: 260px; }
+                .resposta-info { flex-direction: column; gap: 8px; align-items: center; }
             }
         </style>
     </head>
     <body>
         <div class="card">
 
-            <!-- HEADER -->
+            <!-- HEADER COM LOGOS REAIS -->
             <div class="header">
-                <div class="logo-integridade">✦ Integridade Camil</div>
-                <div class="titulo-campanha">
-                    <span class="tag-compliance">COMPLIANCE</span>
-                    <span class="tag-ou">ou</span>
-                    <span class="tag-cilada">CILADA?</span>
+                <div class="logo-integridade">
+                    <img src="{{ logo_integridade }}" alt="Integridade Camil">
+                </div>
+                <div class="logo-campanha">
+                    <img src="{{ logo_campanha }}" alt="Compliance ou Cilada?">
                 </div>
                 <div class="tagline">Antes de decidir, <strong>pergunte.</strong></div>
             </div>
 
             {% if erro_sistema %}
-                <!-- ERRO DO SISTEMA -->
                 <div class="resultado-banner resultado-erro-sistema">
                     ⚠️ Ops!
                 </div>
@@ -800,13 +752,12 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
                     </div>
                 {% else %}
                     <div class="resultado-banner resultado-errou">
-                        ❌ Você Errou
+                        ❌ Você Errou!
                     </div>
                 {% endif %}
 
                 <div class="conteudo">
 
-                    <!-- Sua resposta vs Correta -->
                     <div class="resposta-info">
                         <span>
                             <span class="dot dot-sua"></span>
@@ -818,25 +769,21 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
                         </span>
                     </div>
 
-                    <!-- Badge da resposta correta -->
-                    <div style="text-align:center; margin-bottom:24px;">
+                    <div class="badge-wrapper">
                         <span class="badge-resposta badge-{{ resposta_correta }}">
                             É {{ resposta_correta|upper }}
                         </span>
                     </div>
 
-                    <!-- Cenário -->
                     <div class="cenario-box">
                         <div class="cenario-label">📋 Cenário</div>
                         <div class="cenario-texto">{{ cenario }}</div>
                     </div>
 
-                    <!-- Explicação -->
-                    <div class="explicacao-box {% if acertou %}explicacao-acertou{% else %}explicacao-errou{% endif %}">
+                    <div class="explicacao-box">
                         {{ explicacao }}
                     </div>
 
-                    <!-- Boa Prática -->
                     {% if boa_pratica %}
                     <div class="boa-pratica-box">
                         <div class="boa-pratica-label">💡 Boa prática</div>
@@ -850,7 +797,6 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
             <!-- FOOTER -->
             <div class="footer">
                 <p class="programa">Programa de Integridade e Compliance Camil</p>
-                <p>{{ now }}</p>
             </div>
 
         </div>
@@ -863,6 +809,8 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
         erro_sistema=erro_sistema, mensagem=mensagem, acertou=acertou,
         resposta_usuario=resposta_usuario, resposta_correta=resposta_correta,
         cenario=cenario, explicacao=explicacao, boa_pratica=boa_pratica,
+        logo_integridade=LOGO_INTEGRIDADE,
+        logo_campanha=LOGO_CAMPANHA,
         now=datetime.now().strftime("%d/%m/%Y %H:%M")
     )
 
