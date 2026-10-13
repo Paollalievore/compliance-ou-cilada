@@ -556,15 +556,6 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
                 margin-bottom: 8px;
             }
 
-            .tagline {
-                font-size: 14px;
-                color: #003087;
-                font-weight: 500;
-            }
-            .tagline strong {
-                font-weight: 800;
-            }
-
             /* ── RESULTADO BANNER ── */
             .resultado-banner {
                 padding: 18px 40px;
@@ -733,7 +724,6 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
                 <div class="logo-campanha">
                     <img src="{{ logo_campanha }}" alt="Compliance ou Cilada?">
                 </div>
-                <div class="tagline">Antes de decidir, <strong>pergunte.</strong></div>
             </div>
 
             {% if erro_sistema %}
@@ -796,7 +786,7 @@ def render_feedback(erro_sistema=False, mensagem="", acertou=None,
 
             <!-- FOOTER -->
             <div class="footer">
-                <p class="programa">Programa de Integridade e Compliance Camil</p>
+                <p class="programa">Programa de Integridade Camil</p>
             </div>
 
         </div>
